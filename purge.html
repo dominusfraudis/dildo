@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NULL SECURITY PHILIPPINES — Christmas PURGE Challenge</title>
+
+<!-- MAP LIBRARY -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+body {
+    font-family: Consolas, monospace;
+    margin: 0;
+    background: #0c111b;
+    color: #e2e2e2;
+    overflow-x: hidden;
+}
+
+/* Intro Terminal Boot */
+#intro {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:black;
+    color:#00ff88;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:1.2em;
+    flex-direction:column;
+    z-index:9999;
+}
+#intro-text {
+    width:80%;
+    white-space:pre-wrap;
+    border-right:2px solid #00ff88;
+    overflow:hidden;
+}
+
+/* HUD Red Flicker */
+#hud {
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    pointer-events:none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(255,0,0,0.12) 0px,
+        rgba(255,0,0,0.12) 2px,
+        transparent 3px,
+        transparent 6px
+    );
+    animation: flicker 2s infinite;
+    z-index:20;
+}
+@keyframes flicker {
+  0% {opacity:0.4;}
+  50% {opacity:0.25;}
+  100% {opacity:0.4;}
+}
+
+/* Purge Bar */
+#purge-bar {
+    background:red;
+    color:white;
+    text-align:center;
+    padding:10px;
+    font-size:1.5em;
+    font-weight:bold;
+    animation: glow 1s infinite alternate;
+    position:relative;
+}
+@keyframes glow {
+    from { box-shadow:0 0 5px red; }
+    to { box-shadow:0 0 25px red; }
+}
+
+/* Christmas Lights */
+#lights {
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    padding:10px;
+    pointer-events:none;
+}
+.bulb {
+    width:20px; height:20px;
+    border-radius:50%;
+    margin:3px;
+    animation: blink 1.2s infinite alternate;
+}
+@keyframes blink {
+    0% {opacity:0.3;}
+    100% {opacity:1;}
+}
+
+header {
+    text-align:center;
+    padding:30px;
+    background:#122035;
+    color:white;
+}
+.logo {
+    width:120px; height:120px;
+    background-image:url('https://scontent.fmnl17-6.fna.fbcdn.net/v/t39.30808-6/595398586_122151002018866970_4514117141097897651_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeH5HKf2M_SUng1fqG-FGTrGLAym8xem6hIsDKbzF6bqEqJuc1wSHL4dZNa7SJrp_zsb5B3eCJFwbaBYVfUpZb8M&_nc_ohc=my9L-lyiQw4Q7kNvwHczDsF&_nc_oc=AdmQdQMOYUqcxoJh-ki4xjCv3dm6S2ueIhxX1UwljX9B9W6X6vtGBF9mpeIzh3rRAX8&_nc_zt=23&_nc_ht=scontent.fmnl17-6.fna&_nc_gid=KwHZDKnutJRCXrdnFtWp3Q&oh=00_Afl2QXhDQzYV4e7w1z9tMMxboR77xZmtDmMNvlm8qXa1gg&oe=693EE6FC');
+    background-size:cover;
+    background-position:center;
+    border-radius:50%;
+    margin:auto;
+}
+
+.container {
+    padding:20px;
+    text-align:center;
+}
+
+.card {
+    background:#18273f;
+    margin:20px auto;
+    padding:25px;
+    border-radius:10px;
+    max-width:900px;
+    box-shadow:0 0 15px #000;
+}
+
+button {
+    padding:10px 20px;
+    background:#0bb36f;
+    border:none;
+    color:white;
+    font-size:1.1em;
+    border-radius:5px;
+    cursor:pointer;
+    margin:10px;
+}
+button:hover {
+    background:#0ddf84;
+}
+
+/* Codename Directory Effects */
+#solvers-list {
+    text-align:left;
+    display:inline-block;
+    font-size:1.1em;
+    color:#ff5555;
+    padding:15px;
+    border-left:3px solid red;
+    animation: codenamePulse 2s infinite alternate;
+    filter: drop-shadow(0 0 5px red);
+}
+#solvers-list li {
+    margin: 8px 0;
+    animation: codenameFlicker 4s infinite;
+}
+@keyframes codenamePulse {
+    0% { filter: drop-shadow(0 0 4px red); }
+    100% { filter: drop-shadow(0 0 15px red); }
+}
+@keyframes codenameFlicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 0.85; }
+    94% { opacity: 0.4; }
+    96% { opacity: 1; }
+}
+
+/* Snow */
+.snowflake {
+    position: fixed;
+    top: -10px;
+    color: white;
+    font-size: 1.4em;
+    animation: fall 10s linear infinite;
+}
+@keyframes fall { to { transform: translateY(100vh); } }
+
+/* Map */
+#map {
+    width:100%;
+    height:400px;
+    border:2px solid red;
+    box-shadow:0 0 20px red;
+    margin-top:20px;
+    display:none;
+}
+</style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud"></div>
+
+<!-- Christmas Lights -->
+<div id="lights">
+    <div class="bulb" style="background:red;"></div>
+    <div class="bulb" style="background:green;"></div>
+    <div class="bulb" style="background:yellow;"></div>
+    <div class="bulb" style="background:red;"></div>
+    <div class="bulb" style="background:green;"></div>
+</div>
+
+<!-- Terminal Intro -->
+<div id="intro">
+    <div id="intro-text"></div>
+    <button onclick="finishIntro()">Skip Intro</button>
+</div>
+
+<div id="purge-bar">⚠ CHRISTMAS PURGE PROTOCOL: ACTIVE ⚠</div>
+
+<header>
+    <div class="logo"></div>
+    <h1>NULL SECURITY PHILIPPINES</h1>
+    <h2>Merry Christmas & Happy New Year</h2>
+</header>
+
+<div class="container">
+
+    <!-- Music -->
+    <div class="card">
+        <h2>Do you deserve to stand with NULL SEC?<br>Prove your existence.</h2>
+
+        <iframe id="music" width="100%" height="300"
+            src="https://www.youtube.com/embed/eBOl-JipSEw"
+            frameborder="0" allowfullscreen></iframe>
+
+        <button onclick="toggleMusic()">Toggle Music</button>
+    </div>
+
+    <!-- PURGE CHALLENGE -->
+    <div class="card">
+        <h2>🎄 Christmas PURGE Challenge</h2>
+        <p>
+            NULL SECURITY PHILIPPINES has initiated a <b>total membership purge</b>.<br>
+            Every name erased. Every rank wiped.<br><br>
+            Only those who endure the PURGE will join the <b>2025 CORE TEAM</b>.
+        </p>
+
+        <button onclick="initiatePurgeScan()">Enter The Purge</button>
+
+        <h3 style="color:#00ff99;">
+            Survive the scan. Prove your worth.
+        </h3>
+
+        <!-- Map -->
+        <div id="map"></div>
+    </div>
+
+    <!-- CODENAME DIRECTORY -->
+    <div class="card">
+        <h2 style="color:#ff4444;">🔐 Official Solvers Directory</h2>
+        <p style="color:#ffb3b3;">Put your CODENAME at &lt;li&gt; </p>
+
+        <ul id="solvers-list">
+            <li>1. ______________________</li>
+            <li>2. ______________________</li>
+            <li>3. ______________________</li>
+            <li>4. ______________________</li>
+            <li>5. ______________________</li>
+            <li>6. ______________________</li>
+            <li>7. ______________________</li>
+            <li>8. ______________________</li>
+            <li>9. ______________________</li>
+            <li>10. _____________________</li>
+            <li>11. _____________________</li>
+            <li>12. _____________________</li>
+            <li>13. _____________________</li>
+            <li>14. _____________________</li>
+            <li>15. _____________________</li>
+        </ul>
+    </div>
+
+</div>
+
+<!-- Snow -->
+<script>
+for (let i = 0; i < 40; i++) {
+    let f = document.createElement("div");
+    f.className = "snowflake";
+    f.innerHTML = "❄";
+    f.style.left = Math.random() * 100 + "vw";
+    f.style.animationDuration = (8 + Math.random()*5) + "s";
+    document.body.appendChild(f);
+}
+</script>
+
+<!-- Boot Intro -->
+<script>
+const introText = `
+[ NULL SECURITY SYSTEM BOOTING... ]
+[ Deploying Holiday Purge Protocols..... OK ]
+[ Eliminating Remaining Members.......... COMPLETE ]
+[ Initializing Authorization Matrix...... OK ]
+[ Activating Christmas PURGE Sequence.... ONLINE ]
+---------------------------------------------------
+WELCOME, APPLICANT.
+YOU ARE ENTERING THE PURGE.
+SURVIVE — OR BE WIPED LIKE THE REST.
+`;
+
+let i = 0;
+function typeIntro() {
+    if (i < introText.length) {
+        document.getElementById("intro-text").textContent += introText.charAt(i);
+        i++;
+        setTimeout(typeIntro, 35);
+    }
+}
+typeIntro();
+
+function finishIntro() {
+    document.getElementById("intro").style.display = "none";
+}
+</script>
+
+<!-- Music Toggle -->
+<script>
+let musicVisible = true;
+function toggleMusic() {
+    const m = document.getElementById("music");
+    m.style.display = musicVisible ? "none" : "block";
+    musicVisible = !musicVisible;
+}
+</script>
+
+<!-- PURGE SCAN SYSTEM -->
+<script>
+function initiatePurgeScan() {
+    document.getElementById("map").style.display = "block";
+
+    fetch("https://ipapi.co/json/")
+        .then(res => res.json())
+        .then(data => {
+            const lat = data.latitude;
+            const lon = data.longitude;
+
+            const map = L.map('map').setView([lat, lon], 13);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+            }).addTo(map);
+
+            const marker = L.marker([lat, lon]).addTo(map);
+
+            const circle = L.circle([lat, lon], {
+                radius: 500,
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.4
+            }).addTo(map);
+
+            // Siren sound
+            const audio = new Audio("https://www.soundjay.com/mechanical/sounds/siren-01.mp3");
+            audio.play();
+
+            // Screen shake
+            document.body.style.animation = "shake 0.3s infinite";
+
+            setTimeout(() => {
+                document.body.style.animation = "none";
+            }, 2000);
+
+            // Redirect after scan
+            setTimeout(() => {
+                window.location.href = "https://sb-liliw.com";
+            }, 4500);
+        });
+}
+</script>
+
+<!-- Screen Shake Animation -->
+<style>
+@keyframes shake {
+ 0% { transform: translate(1px, 1px); }
+ 25% { transform: translate(-1px, -2px); }
+ 50% { transform: translate(-3px, 0px); }
+ 75% { transform: translate(3px, 2px); }
+ 100% { transform: translate(1px, -1px); }
+}
+</style>
+
+</body>
+</html>
